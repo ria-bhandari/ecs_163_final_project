@@ -12,6 +12,12 @@ body {
     text-align: center;
 }
 
+#controls .subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #555;
+}
+
 .slider-container {
     margin-top: 10px;
     font-size: 1.2rem;
@@ -22,27 +28,105 @@ body {
     margin-left: 10px;
 }
 
+#viz-wrapper {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    width: min(96vw, 1400px);
+}
+
 #map-container {
-    width: 90vw;
-    height: 70vh;
+    flex: 1;
+    min-width: 0;
+    height: 72vh;
+    min-height: 420px;
     border: 1px solid #ccc;
-    background: #f0f7f4; /* Subtle ocean background so the red countries stand out */
-    overflow: hidden;
     border-radius: 8px;
+    overflow: hidden;
+    box-sizing: border-box;
+    background-color: #e8f4fc;
+}
+
+#map-container svg {
+    display: block;
+}
+
+#legend {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 12px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    min-width: 72px;
+}
+
+.legend-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.legend-bar-row {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.legend-labels {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 230px;
+    padding: 10px 0;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.legend-warm {
+    color: #b2182b;
+}
+
+.legend-cool {
+    color: #2166ac;
+}
+
+#colorbar-svg {
+    overflow: visible;
 }
 
 .country {
-    stroke: #ffffff;      /* Pure white border lines */
+    stroke: #ffffff;
     stroke-width: 0.6px;
     cursor: pointer;
 }
 
 .country:hover {
-    stroke: #111111;     /* Dark highlight on hover */
+    stroke: #111111;
     stroke-width: 1.2px;
 }
 
-/* Floating Tooltip Box */
+.city-point {
+    cursor: pointer;
+    pointer-events: all;
+}
+
+.city-point:hover {
+    stroke: #111 !important;
+    stroke-width: 1.2px !important;
+}
+
+.map-error {
+    padding: 24px;
+    color: #b00020;
+    font-size: 0.95rem;
+}
+
 .tooltip {
     position: absolute;
     background-color: rgba(255, 255, 255, 0.95);
@@ -50,8 +134,8 @@ body {
     padding: 8px 12px;
     border-radius: 4px;
     font-size: 0.9rem;
-    pointer-events: none; /* Stops the tooltip from blocking mouse clicks */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    pointer-events: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     font-family: Arial, sans-serif;
     color: #222;
 }
