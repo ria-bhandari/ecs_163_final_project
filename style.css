@@ -1,0 +1,57 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#controls {
+    margin: 20px;
+    text-align: center;
+}
+
+.slider-container {
+    margin-top: 10px;
+    font-size: 1.2rem;
+}
+
+#yearSlider {
+    width: 300px;
+    margin-left: 10px;
+}
+
+#map-container {
+    width: 90vw;
+    height: 70vh;
+    border: 1px solid #ccc;
+    background: #f0f7f4; /* Subtle ocean background so the red countries stand out */
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.country {
+    stroke: #ffffff;      /* Pure white border lines */
+    stroke-width: 0.6px;
+    cursor: pointer;
+}
+
+.country:hover {
+    stroke: #111111;     /* Dark highlight on hover */
+    stroke-width: 1.2px;
+}
+
+/* Floating Tooltip Box */
+.tooltip {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 1px solid #333;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    pointer-events: none; /* Stops the tooltip from blocking mouse clicks */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    font-family: Arial, sans-serif;
+    color: #222;
+}
