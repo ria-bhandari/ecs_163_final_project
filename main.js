@@ -68,7 +68,7 @@ Promise.all([
 
     countryDataByYear = aggregateCountryTemps(rawCountryData);
     cities = aggregateCityTemps(rawCityData);
-
+    
     countryLayer.selectAll("path")
         .data(geoData.features)
         .join("path")
@@ -297,8 +297,14 @@ function clickedCountry(event, d) {
 
     activeCountry.classed("active", false);
     activeCountry = d3.select(this).classed("active", true);
-
-    const [[x0, y0], [x1, y1]] = pathGenerator.bounds(d);
+    let [[x0, y0], [x1, y1]] = pathGenerator.bounds(d);
+    //hardcoded usa to prevent strange zooming
+    if(d.properties.name == "United States of America"){
+        x0 = projection([200, 32])[0];
+        y0 = projection([200, 32])[1];
+        x1 = projection([300, 38])[0];
+        y1 = projection([300, 38])[1];
+    }
     event.stopPropagation();
 
     svg.transition().duration(750).call(
