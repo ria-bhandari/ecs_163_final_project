@@ -19,13 +19,35 @@
     </div>
 
     <div id="viz-wrapper">
-        <div id="map-container"></div>
+        <div id="map-container">
+            
+            <div id="ca-corner-panel" title="Click to expand California view">
+                <h3 class="ca-panel-title">California Focus</h3>
+                <p style="font-size: 0.7rem; color: #666; margin: 0 0 4px 0; text-align: center;">Click map to expand</p>
+                <svg id="ca-mini-map-svg" width="120" height="140"></svg>
+            </div>
+
+            <div id="ca-full-view">
+                <div class="ca-view-header">
+                    <button id="btn-back-global" class="ca-btn">⬅ Back to Global</button>
+                    <div class="toggle-group">
+                        <span style="font-size: 0.9rem; font-weight: bold; margin-right: 8px;">Viewing:</span>
+                        <button id="btn-toggle-temp" class="ca-btn active-toggle">Temperature</button>
+                        <button id="btn-toggle-sea" class="ca-btn">Sea Level</button>
+                    </div>
+                </div>
+                <svg id="ca-overlay-svg" width="100%" height="100%"></svg>
+            </div>
+
+        </div>
+        
         <aside id="legend">
-            <div class="legend-title">5-yr avg Δ vs 30 yrs ago (°C)</div>
+            <div id="legend-title">5-yr avg Δ vs 30 yrs ago (°C)</div> <!-- added label to find/change colorbar scale -->
             <div class="legend-bar-row">
                 <div class="legend-labels">
-                    <span class="legend-warm">Warmed</span>
-                    <span class="legend-cool">Cooled</span>
+                    <!-- Added individual labels for high and low ends of the legend with distinct colors -->
+                    <span id="legend-high-label" style="color: #b2182b; font-weight: bold;">Warmed</span>
+                    <span id="legend-low-label" style="color: #2166ac; font-weight: bold;">Cooled</span>
                 </div>
                 <svg id="colorbar-svg"></svg>
             </div>
