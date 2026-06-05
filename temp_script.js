@@ -1,4 +1,4 @@
-const tempFile = "./temp_csv/GlobalLandTemperaturesByState.csv";
+const tempFile = "./temperatureandsea/GlobalLandTemperaturesByState.csv";
 
 const selectedStates = [
   "California",
@@ -11,20 +11,23 @@ const selectedStates = [
   "Georgia"
 ];
 
-const svg = d3.select("svg");
-const width = window.innerWidth;
-const height = window.innerHeight;
+const svg = d3.select("#advanced-chart-svg");
+
+const svgNode = svg.node();
+const width = svgNode.clientWidth;
+const height = svgNode.clientHeight;
 
 svg.selectAll("*").remove();
-svg.attr("width", width).attr("height", height);
 
-const margin = { top: 140, right: 220, bottom: 60, left: 80 };
+svg.attr("viewBox", `0 0 ${width} ${height}`);
+
+const margin = { top: 60, right: 180, bottom: 50, left: 70 };
+
 const innerWidth = width - margin.left - margin.right;
 const innerHeight = height - margin.top - margin.bottom;
 
 const g = svg.append("g")
   .attr("transform", `translate(${margin.left},${margin.top})`);
-
 
 d3.csv(tempFile).then(data => {
   const cleaned = data
@@ -39,8 +42,6 @@ d3.csv(tempFile).then(data => {
       year: new Date(d.dt).getFullYear(),
       temperature: +d.AverageTemperature,
       uncertainty: +d.AverageTemperatureUncertainty,
-      // latitude: parseCoord(d.Latitude),
-      // longitude: parseCoord(d.Longitude)
     }))
     .filter(d =>
       !isNaN(d.year) &&
@@ -219,7 +220,6 @@ d3.csv(tempFile).then(data => {
     .attr("text-anchor", "middle")
     .attr("font-size", "28px")
     .attr("font-weight", "bold")
-    .text("Parallel Coordinates Plot of Global Temperature Records");
 
   // Subtitle / instructions
   svg.append("text")
@@ -227,7 +227,6 @@ d3.csv(tempFile).then(data => {
     .attr("y", 68)
     .attr("text-anchor", "middle")
     .attr("font-size", "15px")
-    .text("Brush vertically on any axis to filter records by year, temperature, uncertainty, or location.");
 
   // Legend
   const legend = svg.append("g")

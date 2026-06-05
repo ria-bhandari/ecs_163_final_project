@@ -1,166 +1,169 @@
-const files = [
-  { region: "Atlantic Ocean", file: "slr_sla_atl_free_all_66.csv" },
-  { region: "Caribbean Sea", file: "slr_sla_crs_free_all_66.csv" },
-  { region: "Indian Ocean", file: "slr_sla_ind_free_all_66.csv" },
-  { region: "Mediterranean Sea", file: "slr_sla_mds_free_all_66.csv" },
-  { region: "North Atlantic Ocean", file: "slr_sla_na_free_all.csv" },
-  { region: "North Pacific Ocean", file: "slr_sla_np_free_all.csv" },
-  { region: "Pacific Ocean", file: "slr_sla_pac_free_all_66.csv" },
-  { region: "Southern Ocean", file: "slr_sla_so_free_all.csv" }
-];
+(function drawSeaLevelChart() {
+  const svg = d3.select("#sea-level-svg");
 
-const svg = d3.select("svg");
-const width = window.innerWidth;
-const height = window.innerHeight;
+  const files = [
+    { region: "Atlantic Ocean", file: "slr_sla_atl_free_all_66.csv" },
+    { region: "Caribbean Sea", file: "slr_sla_crs_free_all_66.csv" },
+    { region: "Indian Ocean", file: "slr_sla_ind_free_all_66.csv" },
+    { region: "Mediterranean Sea", file: "slr_sla_mds_free_all_66.csv" },
+    { region: "North Atlantic Ocean", file: "slr_sla_na_free_all.csv" },
+    { region: "North Pacific Ocean", file: "slr_sla_np_free_all.csv" },
+    { region: "Pacific Ocean", file: "slr_sla_pac_free_all_66.csv" },
+    { region: "Southern Ocean", file: "slr_sla_so_free_all.csv" }
+  ];
 
-svg.attr("width", width).attr("height", height);
+  const width = window.innerWidth;
+  const height = window.innerHeight;
 
-const margin = { top: 60, right: 220, bottom: 60, left: 70 };
-const innerWidth = width - margin.left - margin.right;
-const innerHeight = height - margin.top - margin.bottom;
+  svg.attr("width", width).attr("height", height);
 
-const g = svg.append("g")
-  .attr("transform", `translate(${margin.left},${margin.top})`);
+  const margin = { top: 60, right: 220, bottom: 60, left: 70 };
+  const innerWidth = width - margin.left - margin.right;
+  const innerHeight = height - margin.top - margin.bottom;
 
-function loadCleanCSV(file, region) {
-  return d3.text(file).then(text => {
-    const cleanText = text
-      .split("\n")
-      .filter(line => line.trim() !== "" && !line.trim().startsWith("#"))
-      .join("\n");
+  const g = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const rows = d3.csvParseRows(cleanText);
-    
-    return rows.map(row => {
-    // const year = +row[0];
-    const year = Math.floor(+row[0]);
+  function loadCleanCSV(file, region) {
+    return d3.text(file).then(text => {
+      const cleanText = text
+        .split("\n")
+        .filter(line => line.trim() !== "" && !line.trim().startsWith("#"))
+        .join("\n");
 
-    const value = row
-        .slice(1)
-        .map(v => +v)
-        .find(v => !isNaN(v));
+      const rows = d3.csvParseRows(cleanText);
+      
+      return rows.map(row => {
+      // const year = +row[0];
+      const year = Math.floor(+row[0]);
 
-    return {
-        region: region,
-        year: year,
-        value: value
-    };
+      const value = row
+          .slice(1)
+          .map(v => +v)
+          .find(v => !isNaN(v));
 
-    }).filter(d => !isNaN(d.year) && !isNaN(d.value));
+      return {
+          region: region,
+          year: year,
+          value: value
+      };
 
-  });
-}
+      }).filter(d => !isNaN(d.year) && !isNaN(d.value));
 
-Promise.all(files.map(d => loadCleanCSV(d.file, d.region))).then(allData => {
-  const combined = allData.flat();
+    });
+  }
 
-  console.log("combined", combined.slice(0, 10));
+  Promise.all(files.map(d => loadCleanCSV(d.file, d.region))).then(allData => {
+    const combined = allData.flat();
 
-  const years = [...new Set(combined.map(d => d.year))]
-  .sort((a, b) => a - b);
-  const regions = files.map(d => d.region);
+    console.log("combined", combined.slice(0, 10));
 
-  const wideData = years.map(year => {
-    const row = { year };
+    const years = [...new Set(combined.map(d => d.year))]
+    .sort((a, b) => a - b);
+    const regions = files.map(d => d.region);
 
-    regions.forEach(region => {
-      const values = combined.filter(d => d.year === year && d.region === region);
-      row[region] = d3.mean(values, d => d.value) || 0;
+    const wideData = years.map(year => {
+      const row = { year };
+
+      regions.forEach(region => {
+        const values = combined.filter(d => d.year === year && d.region === region);
+        row[region] = d3.mean(values, d => d.value) || 0;
+      });
+
+      return row;
     });
 
-    return row;
-  });
+    const stack = d3.stack()
+      .keys(regions)
+      .offset(d3.stackOffsetNone)
+      .order(d3.stackOrderInsideOut);
 
-  const stack = d3.stack()
-    .keys(regions)
-    .offset(d3.stackOffsetNone)
-    .order(d3.stackOrderInsideOut);
+    const series = stack(wideData);
 
-  const series = stack(wideData);
+    const x = d3.scaleLinear()
+        .domain([1992, 2008])
+        .range([0, innerWidth]);
 
-  const x = d3.scaleLinear()
-      .domain([1992, 2008])
-      .range([0, innerWidth]);
+    const y = d3.scaleLinear()
+      .domain([
+        d3.min(series, layer => d3.min(layer, d => d[0])),
+        d3.max(series, layer => d3.max(layer, d => d[1]))
+      ])
+      .range([innerHeight, 0]);
 
-  const y = d3.scaleLinear()
-    .domain([
-      d3.min(series, layer => d3.min(layer, d => d[0])),
-      d3.max(series, layer => d3.max(layer, d => d[1]))
-    ])
-    .range([innerHeight, 0]);
+    const color = d3.scaleOrdinal()
+      .domain(regions)
+      .range(d3.schemeCategory10);
 
-  const color = d3.scaleOrdinal()
-    .domain(regions)
-    .range(d3.schemeCategory10);
+    const area = d3.area()
+      .x(d => x(d.data.year))
+      .y0(d => y(d[0]))
+      .y1(d => y(d[1]))
+      .curve(d3.curveMonotoneX);
 
-  const area = d3.area()
-    .x(d => x(d.data.year))
-    .y0(d => y(d[0]))
-    .y1(d => y(d[1]))
-    .curve(d3.curveMonotoneX);
+    g.selectAll(".layer")
+      .data(series)
+      .enter()
+      .append("path")
+      .attr("class", "layer")
+      .attr("d", area)
+      .style("fill", d => color(d.key))
+      .style("opacity", 0.85)
+      .on("mouseover", function(d) {
+        d3.selectAll(".layer").style("opacity", 0.2);
+        d3.select(this).style("opacity", 1);
+      })
+      .on("mouseout", function() {
+        d3.selectAll(".layer").style("opacity", 0.85);
+      });
 
-  g.selectAll(".layer")
-    .data(series)
-    .enter()
-    .append("path")
-    .attr("class", "layer")
-    .attr("d", area)
-    .style("fill", d => color(d.key))
-    .style("opacity", 0.85)
-    .on("mouseover", function(d) {
-      d3.selectAll(".layer").style("opacity", 0.2);
-      d3.select(this).style("opacity", 1);
-    })
-    .on("mouseout", function() {
-      d3.selectAll(".layer").style("opacity", 0.85);
+    g.append("g")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(x).tickFormat(d3.format("d")));
+
+    g.append("text")
+      .attr("x", innerWidth / 2)
+      .attr("y", innerHeight + 45)
+      .attr("text-anchor", "middle")
+      .text("Year")
+      .attr("font-size", "18px");
+
+    g.append("g")
+      .call(d3.axisLeft(y));
+
+    g.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -innerHeight / 2)
+      .attr("y", -50)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "16px")
+      .text("Sea Level Anomaly (mm)");
+
+    g.append("text")
+      .attr("x", innerWidth / 2)
+      .attr("y", -20)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "30px")
+      .attr("font-weight", "bold")
+
+    const legend = svg.append("g")
+      .attr("transform", `translate(${width - 200},80)`);
+
+    regions.forEach((region, i) => {
+      const item = legend.append("g")
+        .attr("transform", `translate(0,${i * 25})`);
+
+      item.append("rect")
+        .attr("width", 15)
+        .attr("height", 15)
+        .attr("fill", color(region));
+
+      item.append("text")
+        .attr("x", 25)
+        .attr("y", 12)
+        .style("font-size", "16px")
+        .text(region);
     });
-
-  g.append("g")
-    .attr("transform", `translate(0,${innerHeight})`)
-    .call(d3.axisBottom(x).tickFormat(d3.format("d")));
-
-  g.append("text")
-    .attr("x", innerWidth / 2)
-    .attr("y", innerHeight + 45)
-    .attr("text-anchor", "middle")
-    .text("Year")
-    .attr("font-size", "18px");
-
-  g.append("g")
-    .call(d3.axisLeft(y));
-
-  g.append("text")
-    .attr("transform", "rotate(-90)")
-    .attr("x", -innerHeight / 2)
-    .attr("y", -50)
-    .attr("text-anchor", "middle")
-    .attr("font-size", "16px")
-    .text("Sea Level Anomaly (mm)");
-
-  g.append("text")
-    .attr("x", innerWidth / 2)
-    .attr("y", -20)
-    .attr("text-anchor", "middle")
-    .attr("font-size", "30px")
-    .attr("font-weight", "bold")
-    .text("Regional Sea Level Streamgraph");
-
-  const legend = svg.append("g")
-    .attr("transform", `translate(${width - 200},80)`);
-
-  regions.forEach((region, i) => {
-    const item = legend.append("g")
-      .attr("transform", `translate(0,${i * 25})`);
-
-    item.append("rect")
-      .attr("width", 15)
-      .attr("height", 15)
-      .attr("fill", color(region));
-
-    item.append("text")
-      .attr("x", 25)
-      .attr("y", 12)
-      .style("font-size", "16px")
-      .text(region);
   });
-});
+
+})();
