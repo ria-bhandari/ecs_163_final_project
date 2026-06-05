@@ -1,0 +1,47 @@
+/* Parallel Coordinates + Sea Level Streamgraph */
+
+#advanced-chart-svg,
+#sea-level-svg {
+    width: 100%;
+    height: calc(100% - 45px);
+    display: block;
+    background: #fafafa;
+    border: 1px dashed #d0d0d0;
+    border-radius: 10px;
+}
+
+/* Parallel coordinates */
+.dimension text {
+    font-size: 12px;
+    fill: #222;
+}
+
+.dimension path,
+.dimension line {
+    stroke: #777;
+}
+
+.lines path {
+    transition: opacity 0.2s ease, stroke-width 0.2s ease;
+}
+
+/* Streamgraph */
+.layer {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.layer:hover {
+    opacity: 1;
+}
+
+/* Shared axis styling */
+.axis path,
+.axis line {
+    stroke: #666;
+}
+
+.axis text {
+    font-size: 11px;
+    fill: #333;
+}
