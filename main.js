@@ -71,14 +71,27 @@ renderLegend('temp');
 
 Promise.all([
     d3.json("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"),
-    d3.csv("data/temperature/GlobalLandTemperaturesByCountry.csv"),
-    d3.csv("data/temperature/GlobalLandTemperaturesByMajorCity.csv"),
-    d3.json("https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/california-counties.geojson"), 
-    d3.csv("data/temperature/ca_county_temps.csv"), 
-    d3.csv("data/sea_level/ca_sea_level.csv"),
-    d3.csv("data/sea_level/ca_sea_level_stations.csv"),
-    d3.csv("data/temperature/GlobalLandTemperaturesByCity.csv")       
-]).then(([geo, rawCountryData, rawMajorCityData, caCounties, rawCountyData, rawSeaData, rawSeaStations, rawAllCityData]) => {
+
+    d3.csv("alldatasets/GlobalLandTemperaturesByCountry.csv"),
+    d3.csv("alldatasets/GlobalLandTemperaturesByMajorCity.csv"),
+    d3.csv("alldatasets/GlobalLandTemperaturesByCity.csv"),
+
+    d3.json("https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/california-counties.geojson"),
+
+    d3.csv("alldatasets/ca_county_temps.csv"),
+    d3.csv("alldatasets/ca_sea_level.csv"),
+    d3.csv("alldatasets/ca_sea_level_stations.csv")
+])
+.then(([
+    geo,
+    rawCountryData,
+    rawMajorCityData,
+    rawAllCityData,
+    caCounties,
+    rawCountyData,
+    rawSeaData,
+    rawSeaStations
+]) => {
     
     geoData = geo;
     caCountiesGeoData = caCounties; 
@@ -591,6 +604,26 @@ function updateCaVisuals(year) {
     const caSeaAnomaly = caSeaLevelDataByYear[safeYear];
     const overlaySvg = d3.select("#ca-overlay-svg");
     const overlayProj = overlaySvg.node().__proj;
+
+    // Remove any existing note first so they don't pile up
+    d3.select("#ca-sea-level-note").remove();
+
+    // for sea level, inject the explanatory note about internal counties and coastal stations
+    if (caViewMode === 'sea') {
+        d3.select("#ca-full-view") // Or your container panel's ID
+            .append("div")
+            .attr("id", "ca-sea-level-note")
+            .style("background-color", "#fff3cd")
+            .style("color", "#856404")
+            .style("padding", "10px")
+            .style("margin", "10px")
+            .style("border", "1px solid #ffeeba")
+            .style("border-radius", "4px")
+            .style("font-size", "12px")
+            .style("text-align", "center")
+            .html("<strong>Note:</strong> Internal counties do not have specific sea level data. Visualized anomalies represent average trends recorded at coastal monitoring stations.");
+    }
+
     if (!overlayProj) return;
 
     // LAYER 1: COUNTY BACKGROUND
@@ -727,7 +760,11 @@ d3.select("#ca-corner-panel").on("click", function() {
 d3.select("#btn-back-global").on("click", function() {
     isCaExpanded = false;
     caViewMode = 'temp'; // Default back to temperature
+    renderLegend('temp'); //to add back the temp legend when switch to global view
     
+    //remove sea level note if it exists when going back to global view
+    d3.select("#ca-sea-level-note").remove();
+
     // Hide overlay, restore corner panel
     d3.select("#ca-full-view").style("display", "none");
     d3.select("#ca-corner-panel").style("display", "block");

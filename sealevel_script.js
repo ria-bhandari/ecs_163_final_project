@@ -12,9 +12,10 @@
     { region: "Southern Ocean", file: "alldatasets/slr_sla_so_free_all.csv" }
     ];
 
-  const width = window.innerWidth;
-  const height = window.innerHeight;
 
+  const svgNode = svg.node();
+  const width = svgNode.clientWidth;
+  const height = svgNode.clientHeight;
   svg.attr("width", width).attr("height", height);
 
   const margin = { top: 60, right: 220, bottom: 60, left: 70 };

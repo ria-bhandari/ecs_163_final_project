@@ -3,59 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Temperature Map</title>
+    <title>Climate Visualizations</title>
+
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="parallel_stream.css">
+    <!-- <link rel="stylesheet" href="linechart.css"> -->
+
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
-<body>
 
+<body>
     <div id="controls">
-        <h2>Global Land Average Temperature</h2>
-        <p class="subtitle">Colors show the 5-year average of change vs. 30 years earlier (red = warmed, blue = cooled). Zoom in for major cities</p>
-        <div class="slider-container">
-            <label for="yearSlider">Year: <span id="yearLabel">2000</span></label>
-            <input type="range" id="yearSlider" min="1784" max="2013" value="2000" step="1">
-        </div>
+        <h2>Visualizations for Sea Level and Temperature Change</h2>
+        <p class="subtitle">
+            Explore long-term climate patterns through global temperature change,
+            state-level temperature trends, sea-level anomalies, and linked time-series views.
+        </p>
     </div>
 
-    <div id="viz-wrapper">
-        <div id="map-container">
-            
-            <div id="ca-corner-panel" title="Click to expand California view">
-                <h3 class="ca-panel-title">California Focus</h3>
-                <p style="font-size: 0.7rem; color: #666; margin: 0 0 4px 0; text-align: center;">Click map to expand</p>
-                <svg id="ca-mini-map-svg" width="120" height="140"></svg>
-            </div>
+    <main id="dashboard">
 
-            <div id="ca-full-view">
-                <div class="ca-view-header">
-                    <button id="btn-back-global" class="ca-btn">⬅ Back to Global</button>
-                    <div class="toggle-group">
-                        <span style="font-size: 0.9rem; font-weight: bold; margin-right: 8px;">Viewing:</span>
-                        <button id="btn-toggle-temp" class="ca-btn active-toggle">Temperature</button>
-                        <button id="btn-toggle-sea" class="ca-btn">Sea Level</button>
+        <section id="main-vis-section">
+            <div id="map-panel" class="chart-card main-card">
+                <div class="card-header">
+                    <h2>Global Land Average Temperature</h2>
+                    <p>
+                        Colors show the 5-year average of change vs. 30 years earlier
+                        (red = warmed, blue = cooled). Zoom in for major cities.
+                    </p>
+
+                    <div class="slider-container">
+                        <label for="yearSlider">Year: <span id="yearLabel">2000</span></label>
+                        <input type="range" id="yearSlider" min="1784" max="2013" value="2000" step="1">
                     </div>
                 </div>
-                <svg id="ca-overlay-svg" width="100%" height="100%"></svg>
+
+                <div id="map-row">
+                    <div id="map-container">
+                        <div id="ca-corner-panel" title="Click to expand California view">
+                            <h3 class="ca-panel-title">California Focus</h3>
+                            <p style="font-size: 0.7rem; color: #666; margin: 0 0 4px 0; text-align: center;">
+                                Click map to expand
+                            </p>
+                            <svg id="ca-mini-map-svg" width="120" height="140"></svg>
+                        </div>
+
+                        <div id="ca-full-view">
+                            <div class="ca-view-header">
+                                <button id="btn-back-global" class="ca-btn">⬅ Back to Global</button>
+                                <div class="toggle-group">
+                                    <span style="font-size: 0.9rem; font-weight: bold; margin-right: 8px;">Viewing:</span>
+                                    <button id="btn-toggle-temp" class="ca-btn active-toggle">Temperature</button>
+                                    <button id="btn-toggle-sea" class="ca-btn">Sea Level</button>
+                                </div>
+                            </div>
+                            <svg id="ca-overlay-svg" width="100%" height="100%"></svg>
+                        </div>
+                    </div>
+
+                    <aside id="legend">
+                        <div id="legend-title">5-yr avg Δ vs 30 yrs ago (°C)</div>
+                        <div class="legend-bar-row">
+                            <div class="legend-labels">
+                                <span id="legend-high-label" style="color: #b2182b; font-weight: bold;">Warmed</span>
+                                <span id="legend-low-label" style="color: #2166ac; font-weight: bold;">Cooled</span>
+                            </div>
+                            <svg id="colorbar-svg"></svg>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+
+        <section id="secondary-vis-section">
+            <div class="chart-card temp-card">
+                <h2>Parallel Coordinates Plot</h2>
+                <svg id="advanced-chart-svg"></svg>
             </div>
 
-        </div>
-        
-        <aside id="legend">
-            <div id="legend-title">5-yr avg Δ vs 30 yrs ago (°C)</div> <!-- added label to find/change colorbar scale -->
-            <div class="legend-bar-row">
-                <div class="legend-labels">
-                    <!-- Added individual labels for high and low ends of the legend with distinct colors -->
-                    <span id="legend-high-label" style="color: #b2182b; font-weight: bold;">Warmed</span>
-                    <span id="legend-low-label" style="color: #2166ac; font-weight: bold;">Cooled</span>
-                </div>
-                <svg id="colorbar-svg"></svg>
+            <div class="chart-card">
+                <h2>Sea Level Streamgraph</h2>
+                <svg id="sea-level-svg"></svg>
             </div>
-        </aside>
-    </div>
+
+            <div class="chart-card">
+                <h2>Line Chart</h2>
+                <svg id="line-chart-svg"></svg>
+            </div>
+        </section>
+
+    </main>
 
     <div id="tooltip" class="tooltip" style="opacity: 0;"></div>
 
     <script src="main.js"></script>
+    <script src="sealevel_script.js"></script>
+    <script src="temp_script.js"></script>
+    <!-- <script src="linechart.js"></script> -->
 </body>
 </html>
