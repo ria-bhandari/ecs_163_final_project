@@ -62,17 +62,4 @@ For the selected year, we take the average temperature over the past 5 years and
 
 In California detail mode, counties show NOAA temperature anomalies directly. Sea level mode fills counties with a statewide coastal average and places dots at individual tide gauge locations.
 
-## Optional data prep
 
-If you need to regenerate the California datasets:
-
-```bash
-node fetch_county_temps.js
-node extract_noaa_data.js
-```
-
-Raw tide gauge files (`941*_meantrend.csv`) should sit in the project root before running `extract_noaa_data.js`.
-
-## Course
-
-ECS 163 – Information Visualization, UC Davis
