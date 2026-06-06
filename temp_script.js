@@ -1,3 +1,6 @@
+// Parallel coordinates for eight U.S. states.
+// Brush any axis to filter lines on the other dimensions.
+
 (function drawStateTemperatureChart() {
   const tempFile = "./alldatasets/GlobalLandTemperaturesByState.csv";
 
@@ -29,6 +32,7 @@
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
   d3.csv(tempFile).then(data => {
+    // Keep US states with complete readings between 1900 and 2012
     const cleaned = data
       .filter(d =>
         d.Country === "United States" &&
@@ -143,6 +147,7 @@
 
     const activeBrushes = {};
 
+    // A line stays visible only if it passes every active brush filter
     function brush(event, dim) {
       if (event.selection) {
         activeBrushes[dim] = event.selection.map(y[dim].invert);

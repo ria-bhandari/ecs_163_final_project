@@ -1,7 +1,9 @@
+// Downloads annual temperature anomalies for every California county from NOAA.
+// Output feeds the county coloring in the California map overlay.
+
 const fs = require('fs');
 const path = require('path');
 
-// California counties and their specific NOAA API FIPS codes
 const COUNTIES = [
     { name: "Alameda", fips: "001" }, { name: "Alpine", fips: "003" }, { name: "Amador", fips: "005" },
     { name: "Butte", fips: "007" }, { name: "Calaveras", fips: "009" }, { name: "Colusa", fips: "011" },
@@ -31,24 +33,20 @@ async function fetchCountyData() {
     console.log("Starting NOAA County Data Pipeline...");
     
     for (const county of COUNTIES) {
-        // Ping the NOAA API for annual temperature anomalies (1895-2013)
         const url = `https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/county/time-series/CA-${county.fips}/tavg/12/12/1895-2013.csv?base_prd=true&begbaseyear=1901&endbaseyear=2000`;
         
         try {
             const response = await fetch(url);
             const text = await response.text();
             
-            // Parse the CSV response
             const lines = text.split('\n');
             lines.forEach(line => {
-                // Skip NOAA metadata headers
                 if (line.includes(',') && !line.startsWith('Date') && !line.startsWith('Location')) {
                     const parts = line.split(',');
                     if (parts.length >= 3) {
-                        const year = parts[0].substring(0, 4); // Extract YYYY
-                        const anomaly = parseFloat(parts[2]); // The anomaly value
-                        // Convert Fahrenheit anomaly to Celsius
-                        const anomalyC = anomaly * (5/9); 
+                        const year = parts[0].substring(0, 4);
+                        const anomaly = parseFloat(parts[2]);
+                        const anomalyC = anomaly * (5 / 9); // NOAA returns Fahrenheit
                         if (!isNaN(anomalyC)) {
                             outputRows.push(`${county.name},${year},${anomalyC.toFixed(3)}`);
                         }
@@ -57,8 +55,7 @@ async function fetchCountyData() {
             });
             console.log(`Fetched: ${county.name} County`);
             
-            // 200ms delay to respect NOAA's API rate limits
-            await new Promise(r => setTimeout(r, 200)); 
+            await new Promise(r => setTimeout(r, 200)); // Be gentle on the NOAA API
             
         } catch (error) {
             console.error(`Failed to fetch ${county.name}:`, error);

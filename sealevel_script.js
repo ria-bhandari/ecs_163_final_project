@@ -1,3 +1,6 @@
+// Stacked area chart of regional sea level anomalies by ocean basin.
+// NOAA files have comment headers, so we strip those before parsing.
+
 (function drawSeaLevelChart() {
   const svg = d3.select("#sea-level-svg");
 
@@ -25,6 +28,7 @@
   const g = svg.append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
+  // NOAA exports include # comment lines that break d3.csv
   function loadCleanCSV(file, region) {
     return d3.text(file).then(text => {
       const cleanText = text
@@ -35,7 +39,6 @@
       const rows = d3.csvParseRows(cleanText);
       
       return rows.map(row => {
-      // const year = +row[0];
       const year = Math.floor(+row[0]);
 
       const value = row
@@ -57,12 +60,11 @@
   Promise.all(files.map(d => loadCleanCSV(d.file, d.region))).then(allData => {
     const combined = allData.flat();
 
-    console.log("combined", combined.slice(0, 10));
-
     const years = [...new Set(combined.map(d => d.year))]
     .sort((a, b) => a - b);
     const regions = files.map(d => d.region);
 
+    // Pivot to wide format so d3.stack can build layers per region
     const wideData = years.map(year => {
       const row = { year };
 

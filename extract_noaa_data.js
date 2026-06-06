@@ -1,7 +1,9 @@
+// Compiles raw NOAA tide gauge meantrend files into one stations CSV.
+// Run once after downloading the 941*_meantrend.csv files into the project root.
+
 const fs = require('fs');
 const path = require('path');
 
-// 1. Comprehensive array mapping all 16 downloaded NOAA California Tide Gauges
 const STATIONS = [
     { id: '9410170', name: 'San Diego',         lat: 32.714, lon: -117.173, offset: 7.0 },
     { id: '9410230', name: 'La Jolla',          lat: 32.866, lon: -117.255, offset: 6.9 },
@@ -37,7 +39,7 @@ STATIONS.forEach(station => {
     const content = fs.readFileSync(filePath, 'utf-8');
     const lines = content.split(/\r?\n/);
 
-    // Group monthly records by year to calculate continuous annual averages
+    // Average monthly readings into one value per year
     const yearlyData = {};
 
     lines.forEach(line => {
@@ -49,7 +51,6 @@ STATIONS.forEach(station => {
         const year = parseInt(columns[0], 10);
         const value = parseFloat(columns[2]); // Monthly Mean Sea Level coordinate
 
-        // Keep bounds cleanly constrained to your interactive temporal slider
         if (year >= 1784 && year <= 2013 && !isNaN(value)) {
             if (!yearlyData[year]) {
                 yearlyData[year] = [];
@@ -58,13 +59,12 @@ STATIONS.forEach(station => {
         }
     });
 
-    // Compile groupings into an annual delta timeline
     Object.keys(yearlyData).sort().forEach(yearStr => {
         const year = parseInt(yearStr, 10);
         const values = yearlyData[year];
         
         if (values.length > 0) {
-            // THE FIX: The NOAA meantrend files are already baseline-normalized anomalies!
+            // Meantrend files are already baseline-normalized anomalies
             const anomaly = values.reduce((sum, val) => sum + val, 0) / values.length;
 
             const formattedDate = `${year}-01-01`;
@@ -75,7 +75,6 @@ STATIONS.forEach(station => {
     console.log(`Successfully compiled timeline for: ${station.name}`);
 });
 
-// 2. Ensure output folder layout is verified
 const outputDir = path.join(__dirname, 'data', 'sea_level');
 if (!fs.existsSync(outputDir)){
     fs.mkdirSync(outputDir, { recursive: true });

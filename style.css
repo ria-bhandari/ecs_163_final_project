@@ -1,3 +1,5 @@
+/* Dashboard layout: chart row on top, map below. Colors and spacing live in variables. */
+
 :root {
     --bg-page: #eef1f6;
     --bg-surface: #ffffff;

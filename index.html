@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Climate dashboard: charts on top, interactive map below. D3 scripts run after the DOM loads. -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -16,16 +17,18 @@
 </head>
 
 <body>
+    <!-- Site title and short intro -->
     <header id="controls">
         <h1>Nonuniformity of Climate Change</h1>
         <p class="subtitle">
-            Explore long-term climate patterns through,
-            then scroll down to the geographic map for global and California-focused maps.
+            Explore linked time-series views up top, then scroll down to the geographic map
+            for global and California-focused exploration.
         </p>
     </header>
 
     <main id="dashboard">
 
+        <!-- Top section: parallel coords, streamgraph, and line chart -->
         <section id="charts-section" aria-label="Time series visualizations">
             <div class="section-intro">
                 <span class="section-tag">Time Series</span>
@@ -64,6 +67,7 @@
             </div>
         </section>
 
+        <!-- Bottom section: global map with year slider and CA detail overlay -->
         <section id="map-section" aria-label="Geographic map">
             <div class="section-intro">
                 <span class="section-tag">Geography</span>
@@ -85,6 +89,7 @@
 
                 <div id="map-row">
                     <div id="map-container">
+                        <!-- Mini CA map; clicking opens the full-screen county overlay -->
                         <div id="ca-corner-panel" title="Click to expand California view">
                             <h3 class="ca-panel-title">California Focus</h3>
                             <p class="ca-panel-hint">Click map to expand</p>
@@ -120,6 +125,7 @@
 
     </main>
 
+    <!-- Shared hover tooltip used by map and parallel coordinates -->
     <div id="tooltip" class="tooltip" style="opacity: 0;"></div>
 
     <script src="main.js"></script>

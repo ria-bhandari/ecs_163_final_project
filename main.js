@@ -1,3 +1,6 @@
+// Global temperature map, California detail overlay, and year slider.
+// Coloring is based on a 5-year temp delta vs. 30 years earlier.
+
 const MAP_PADDING = 28;
 const CITY_ZOOM_THRESHOLD = 2.2;
 const OCEAN_COLOR = "#e8f4fc";
@@ -35,15 +38,14 @@ const colorScale = d3.scaleDiverging()
     .domain(DELTA_DOMAIN)
     .interpolator(t => d3.interpolateRdBu(1 - t));
 
-// California Specific Variables
-// diff sea level scale to better fit the smaller range of anomalies and differentiate from temp colors
+// California overlay state and a separate blue scale for sea level anomalies
 const seaLevelColorScale = d3.scaleSequential()
     .domain([-50, 250]) 
     .interpolator(d3.interpolateBlues);
 let caTempDataByYear = {};
 let caSeaLevelDataByYear = {};
 let caSeaStations = [];
-let caCitiesArray = []; //Cache for California cities b/c loading problem
+let caCitiesArray = []; // Pre-filtered CA cities so the overlay does not re-scan the full dataset
 let isCaExpanded = false;
 let caViewMode = 'temp'; 
 let countryDataByYear = {};
@@ -55,7 +57,7 @@ let currentTransform = d3.zoomIdentity;
 let caZoomTransform = d3.zoomIdentity;
 
 let caCountiesGeoData = null;
-let caCountyTempDataByYear = {}; // Will hold { "Los Angeles": { 1980: 0.5, 1981: 0.6... } }
+let caCountyTempDataByYear = {}; // { countyName: { year: anomaly } }
 
 const zoomBehavior = d3.zoom()
     .scaleExtent([1, 14])
@@ -69,6 +71,7 @@ svg.call(zoomBehavior);
 
 renderLegend('temp');
 
+// Load geo boundaries and all temperature / sea level CSVs in one pass
 Promise.all([
     d3.json("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"),
 
@@ -96,14 +99,14 @@ Promise.all([
     geoData = geo;
     caCountiesGeoData = caCounties; 
     
-    // 1. Parse detailed county data
+    // County-level NOAA anomalies for the CA detail view
     caCountyTempDataByYear = {};
     rawCountyData.forEach(d => {
         if (!caCountyTempDataByYear[d.County]) caCountyTempDataByYear[d.County] = {};
         caCountyTempDataByYear[d.County][d.Year] = parseFloat(d.Anomaly);
     });
 
-    // 2. Derive the statewide average directly from county data (Replaces rawStateData)
+    // Statewide average derived from counties (used to color the US on the global map)
     caTempDataByYear = {};
     const stateAcc = {};
     rawCountyData.forEach(d => {
@@ -119,7 +122,6 @@ Promise.all([
         caTempDataByYear[year] = stateAcc[year].sum / stateAcc[year].count;
     });
 
-    // 3. Process Sea Level Data
     caSeaLevelDataByYear = aggregateCaliforniaSeaLevel(rawSeaData);
     caSeaStations = aggregateSeaStations(rawSeaStations);
 
@@ -158,6 +160,8 @@ Promise.all([
     console.error("Error setting up map:", err);
 });
 
+// --- Data helpers ---
+
 function normalizeCountryName(country) {
     if (country === "United States") return "United States of America";
     if (country === "Congo (Democratic Republic of the)") return "Democratic Republic of the Congo";
@@ -171,6 +175,7 @@ function parseCoord(str) {
     return (hem === "S" || hem === "W") ? -num : num;
 }
 
+// Compare a 5-year window to the same window 30 years ago
 function tempDelta(years, year) {
     const deltas = [];
     for (let i = 0; i < DELTA_WINDOW; i++) {
@@ -241,6 +246,7 @@ function aggregateCityTemps(rows) {
     });
 }
 
+// Swap the color bar between temperature (red/blue) and sea level (blues)
 function renderLegend(mode) {
     const barWidth = 26;
     const barHeight = 220;
@@ -249,27 +255,23 @@ function renderLegend(mode) {
     const isTemp = (mode === 'temp');
     const activeScale = isTemp ? colorScale : seaLevelColorScale;
     
-    // The updated domain: degrees Celsius for temp, millimeters for sea level
     const [lo, hi] = isTemp ? [-2.5, 2.5] : [-50, 250];
 
-    // 1. UPDATE THE HTML LABELS
     const titleText = isTemp ? "5-yr avg Δ vs 30 yrs ago (°C)" : "Sea Level Anomaly vs Baseline (mm)";
     d3.select("#legend-title").text(titleText);
     
     d3.select("#legend-high-label")
         .text(isTemp ? "Warmed" : "Higher")
-        .style("color", isTemp ? "#b2182b" : "#08519c"); // Deep red vs Deep blue
-        
+        .style("color", isTemp ? "#b2182b" : "#08519c");
+
     d3.select("#legend-low-label")
         .text(isTemp ? "Cooled" : "Lower")
-        .style("color", isTemp ? "#2166ac" : "#eff3ff"); // Blue vs Pale blue
+        .style("color", isTemp ? "#2166ac" : "#eff3ff");
 
-    // 2. REBUILD THE SVG GRADIENT BAR
     const legendSvg = d3.select("#colorbar-svg");
-    legendSvg.selectAll("*").remove(); // Wipe the old legend clean
+    legendSvg.selectAll("*").remove();
 
-    // Widened to 60px to comfortably fit the new 'mm' and '°C' text labels
-    legendSvg.attr("width", barWidth + 60) 
+    legendSvg.attr("width", barWidth + 60)
              .attr("height", barHeight + marginTop + 10);
 
     const defs = legendSvg.append("defs");
@@ -296,12 +298,10 @@ function renderLegend(mode) {
         .attr("rx", 3)
         .style("fill", "url(#dynamic-gradient)");
 
-    // 3. DRAW THE AXIS & TICKS
     const axisScale = d3.scaleLinear()
         .domain([lo, hi])
         .range([barHeight + marginTop, marginTop]);
 
-    // Format the ticks dynamically based on the active mode
     const axisFormat = isTemp
         ? d => (d === 0 ? "0" : (d > 0 ? "+" : "") + d.toFixed(1) + "°C")
         : d => (d === 0 ? "0" : (d > 0 ? "+" : "") + d.toFixed(1) + " mm");
@@ -355,6 +355,7 @@ function formatDelta(delta) {
     return `${sign}${delta.toFixed(2)}°C avg (${startYear}–${endYear} vs ${baselineStart}–${baselineEnd})`;
 }
 
+// City dots only show up after zooming in past the threshold
 function updateCityLayer() {
     const showCities = currentTransform.k >= CITY_ZOOM_THRESHOLD;
     cityLayer.style("display", showCities ? null : "none");
@@ -393,7 +394,7 @@ function clickedCountry(event, d) {
     activeCountry.classed("active", false);
     activeCountry = d3.select(this).classed("active", true);
     let [[x0, y0], [x1, y1]] = pathGenerator.bounds(d);
-    //hardcoded usa to prevent strange zooming
+    // USA bounds are tweaked manually because the raw bbox zooms awkwardly
     if(d.properties.name == "United States of America"){
         x0 = projection([200, 32])[0];
         y0 = projection([200, 32])[1];
@@ -453,7 +454,7 @@ function updateMapColors(year) {
         .style("fill", d => {
             const countryName = d.properties.name;
             
-            // If it's the US and we aren't zoomed into the detail view
+            // Use CA statewide data for the US shape unless the detail overlay is open
             if (countryName === "United States of America" && !isCaExpanded) {
                 const caVal = caTempDataByYear[year];
                 if (caVal !== undefined) return colorScale(caVal);
@@ -465,7 +466,6 @@ function updateMapColors(year) {
         });
     updateMiniMapColors(year);
     updateCityLayer();
-    // Only update the internal county logic if the detail view is actually open
     if (isCaExpanded && caGeoFeature) updateCaVisuals(year);
 }
 
@@ -510,8 +510,7 @@ function aggregateCaliforniaSeaLevel(rows) {
     rows.forEach(d => {
         if (!d.Date || d.MeanSeaLevelAnomaly === undefined) return;
         const year = parseInt(d.Date.split("-")[0], 10);
-        // multiply by 1000 to convert to mm
-        const anomaly = parseFloat(d.MeanSeaLevelAnomaly) * 1000; 
+        const anomaly = parseFloat(d.MeanSeaLevelAnomaly) * 1000; // meters to mm
         if (!isNaN(year) && !isNaN(anomaly)) {
             if (!acc[year]) acc[year] = { sum: 0, count: 0 };
             acc[year].sum += anomaly;
@@ -527,7 +526,7 @@ function aggregateSeaStations(rows) {
     rows.forEach(d => {
         if (!d.Date || d.MeanSeaLevelAnomaly === undefined) return;
         const year = parseInt(d.Date.split("-")[0], 10);
-        const anomaly = parseFloat(d.MeanSeaLevelAnomaly) * 1000; // multiply by 1000 to convert to mm
+        const anomaly = parseFloat(d.MeanSeaLevelAnomaly) * 1000; // meters to mm
         const lat = parseFloat(d.Latitude);
         const lon = parseFloat(d.Longitude);
         if (isNaN(year) || isNaN(anomaly)) return;
@@ -540,9 +539,9 @@ function aggregateSeaStations(rows) {
     return Array.from(stationMap.values());
 }
 
+// Small CA preview in the corner of the global map
 function drawMiniMap() {
     const miniSvg = d3.select("#ca-mini-map-svg");
-    // Clear out old elements if redrawing
     miniSvg.selectAll("*").remove();
     
     const miniProj = d3.geoMercator().fitSize([120, 140], caGeoFeature);
@@ -552,11 +551,12 @@ function drawMiniMap() {
         .datum(caGeoFeature)
         .attr("id", "mini-ca-path")
         .attr("d", miniPath)
-        .style("fill", "#e0e0e0") //add a default fill to prevent black color on missing data
+        .style("fill", "#e0e0e0")
         .style("stroke", "#333")
         .style("stroke-width", "1px");
 }
 
+// Full-screen California map with zoomable county and city layers
 function drawOverlayMap() {
     if (!caGeoFeature) return;
     const overlaySvg = d3.select("#ca-overlay-svg");
@@ -574,10 +574,8 @@ function drawOverlayMap() {
     );
     const overlayPath = d3.geoPath().projection(overlayProj);
 
-    // MASTER CONTAINER: Everything goes inside this 'g'
     const masterG = overlaySvg.append("g").attr("id", "ca-map-master");
 
-    // Path (Background)
     masterG.append("path")
         .datum(caGeoFeature)
         .attr("id", "giant-ca-path")
@@ -586,31 +584,27 @@ function drawOverlayMap() {
         .style("stroke", "#333")
         .style("stroke-width", "2px");
 
-    // County Layer (Middle)
     masterG.append("g").attr("id", "ca-overlay-counties");
-    
-    // City Layer (Top)
     masterG.append("g").attr("id", "ca-overlay-cities");
     
     overlaySvg.node().__proj = overlayProj;
     setupCaZoom();
 }
 
+// Redraw county fills and station/city dots when year or mode changes
 function updateCaVisuals(year) {
-    // Only run if the detail view is active
-    if (!isCaExpanded) return; 
+    if (!isCaExpanded) return;
 
     const safeYear = year || 2000; 
     const caSeaAnomaly = caSeaLevelDataByYear[safeYear];
     const overlaySvg = d3.select("#ca-overlay-svg");
     const overlayProj = overlaySvg.node().__proj;
 
-    // Remove any existing note first so they don't pile up
     d3.select("#ca-sea-level-note").remove();
 
-    // for sea level, inject the explanatory note about internal counties and coastal stations
+    // Sea level data only exists at coastal gauges, so warn the user
     if (caViewMode === 'sea') {
-        d3.select("#ca-full-view") // Or your container panel's ID
+        d3.select("#ca-full-view")
             .append("div")
             .attr("id", "ca-sea-level-note")
             .style("background-color", "#fff3cd")
@@ -626,13 +620,11 @@ function updateCaVisuals(year) {
 
     if (!overlayProj) return;
 
-    // LAYER 1: COUNTY BACKGROUND
     let countiesGroup = overlaySvg.select("#ca-overlay-counties");
     if (countiesGroup.empty()) {
         countiesGroup = overlaySvg.insert("g", "#ca-overlay-cities").attr("id", "ca-overlay-counties");
     }
 
-    // Ensure the main state boundary outline is transparent
     d3.select("#giant-ca-path").style("fill", "none");
 
     if (caCountiesGeoData) {
@@ -641,7 +633,7 @@ function updateCaVisuals(year) {
             .join("path")
             .attr("class", "county")
             .attr("d", d3.geoPath().projection(overlayProj))
-            .style("fill", "#e0e0e0") // Default fill
+            .style("fill", "#e0e0e0")
             .style("stroke", "#ffffff")
             .style("stroke-width", "0.5px");
 
@@ -677,13 +669,12 @@ function updateCaVisuals(year) {
             .on("mouseleave", hideTooltip);
     }
 
-    // LAYER 2: FOREGROUND DOTS
     let cityGroup = overlaySvg.select("#ca-overlay-cities");
     if (cityGroup.empty()) {
         cityGroup = overlaySvg.append("g").attr("id", "ca-overlay-cities");
     }
     
-    cityGroup.raise(); // Ensure dots stay on top
+    cityGroup.raise();
 
     let activeDots = [];
     if (caViewMode === 'temp') {
@@ -737,39 +728,35 @@ function setupCaZoom() {
     const caZoom = d3.zoom()
         .scaleExtent([1, 8])
         .on("zoom", (event) => {
-            // Apply zoom to the master container only
             masterG.attr("transform", event.transform);
         });
 
     overlaySvg.call(caZoom);
 }
 
-// California Full-Screen Overlay UI Triggers
+// --- California overlay UI ---
+
 d3.select("#ca-corner-panel").on("click", function() {
-    if (!caGeoFeature) return; 
-    isCaExpanded = true; // Flip the switch to detail mode
+    if (!caGeoFeature) return;
+    isCaExpanded = true;
     
     d3.select(this).style("display", "none");
     d3.select("#ca-full-view").style("display", "flex");
 
     drawOverlayMap(); 
-    updateCaVisuals(currentYear); // This will now render the counties
-    updateMapColors(currentYear); // This will "hide" the CA solid color on the global map
+    updateCaVisuals(currentYear);
+    updateMapColors(currentYear);
 });
 
 d3.select("#btn-back-global").on("click", function() {
     isCaExpanded = false;
-    caViewMode = 'temp'; // Default back to temperature
-    renderLegend('temp'); //to add back the temp legend when switch to global view
-    
-    //remove sea level note if it exists when going back to global view
+    caViewMode = 'temp';
+    renderLegend('temp');
     d3.select("#ca-sea-level-note").remove();
 
-    // Hide overlay, restore corner panel
     d3.select("#ca-full-view").style("display", "none");
     d3.select("#ca-corner-panel").style("display", "block");
-    
-    // Reset toggle button styles back to Temp
+
     d3.selectAll(".toggle-group .ca-btn").classed("active-toggle", false);
     d3.select("#btn-toggle-temp").classed("active-toggle", true);
 });
@@ -779,7 +766,7 @@ d3.select("#btn-toggle-temp").on("click", function() {
     d3.selectAll(".toggle-group .ca-btn").classed("active-toggle", false);
     d3.select(this).classed("active-toggle", true);
     
-    renderLegend('temp'); // Swap the legend to Red/Blue
+    renderLegend('temp');
     updateCaVisuals(currentYear);
 });
 
@@ -787,7 +774,7 @@ d3.select("#btn-toggle-sea").on("click", function() {
     caViewMode = 'sea';
     d3.selectAll(".toggle-group .ca-btn").classed("active-toggle", false);
     d3.select(this).classed("active-toggle", true);
-    
-    renderLegend('sea'); // Swap the legend to Blues
+
+    renderLegend('sea');
     updateCaVisuals(currentYear);
 });
