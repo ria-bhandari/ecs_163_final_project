@@ -5,29 +5,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Climate Visualizations</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="parallel_stream.css">
-    <!-- <link rel="stylesheet" href="linechart.css"> -->
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 
 <body>
-    <div id="controls">
-        <h2>Visualizations for Sea Level and Temperature Change</h2>
+    <header id="controls">
+        <h1>Nonuniformity of Climate Change</h1>
         <p class="subtitle">
-            Explore long-term climate patterns through global temperature change,
-            state-level temperature trends, sea-level anomalies, and linked time-series views.
+            Explore long-term climate patterns through,
+            then scroll down to the geographic map for global and California-focused maps.
         </p>
-    </div>
+    </header>
 
     <main id="dashboard">
 
-        <section id="main-vis-section">
+        <section id="charts-section" aria-label="Time series visualizations">
+            <div class="section-intro">
+                <span class="section-tag">Time Series</span>
+                <h2 class="section-title">Trends Across States &amp; Oceans</h2>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="card-heading">
+                        <h3>Line Chart</h3>
+                        <p>State-level temperature trajectories over time.</p>
+                    </div>
+                    <svg id="line-chart-svg"></svg>
+                </div>
+
+                <div class="chart-card">
+                    <div class="card-heading">
+                        <h3>Sea Level Streamgraph</h3>
+                        <p>Stacked regional sea-level anomalies by ocean.</p>
+                    </div>
+                    <svg id="sea-level-svg"></svg>
+                </div>
+
+                <div class="chart-card">
+                    <div class="card-heading">
+                        <h3>Parallel Coordinates</h3>
+                        <p>Brush axes to filter U.S. states by year, temperature, and uncertainty.</p>
+                    </div>
+                    <svg id="advanced-chart-svg"></svg>
+                </div>
+            </div>
+
+            <div class="scroll-hint" aria-hidden="true">
+                <span>Geographic map below</span>
+                <span class="scroll-arrow">↓</span>
+            </div>
+        </section>
+
+        <section id="map-section" aria-label="Geographic map">
+            <div class="section-intro">
+                <span class="section-tag">Geography</span>
+                <h2 class="section-title">Global Land Average Temperature</h2>
+            </div>
+
             <div id="map-panel" class="chart-card main-card">
                 <div class="card-header">
-                    <h2>Global Land Average Temperature</h2>
-                    <p>
+                    <p class="map-description">
                         Colors show the 5-year average of change vs. 30 years earlier
                         (red = warmed, blue = cooled). Zoom in for major cities.
                     </p>
@@ -42,9 +87,7 @@
                     <div id="map-container">
                         <div id="ca-corner-panel" title="Click to expand California view">
                             <h3 class="ca-panel-title">California Focus</h3>
-                            <p style="font-size: 0.7rem; color: #666; margin: 0 0 4px 0; text-align: center;">
-                                Click map to expand
-                            </p>
+                            <p class="ca-panel-hint">Click map to expand</p>
                             <svg id="ca-mini-map-svg" width="120" height="140"></svg>
                         </div>
 
@@ -52,7 +95,7 @@
                             <div class="ca-view-header">
                                 <button id="btn-back-global" class="ca-btn">⬅ Back to Global</button>
                                 <div class="toggle-group">
-                                    <span style="font-size: 0.9rem; font-weight: bold; margin-right: 8px;">Viewing:</span>
+                                    <span class="toggle-label">Viewing:</span>
                                     <button id="btn-toggle-temp" class="ca-btn active-toggle">Temperature</button>
                                     <button id="btn-toggle-sea" class="ca-btn">Sea Level</button>
                                 </div>
@@ -65,30 +108,13 @@
                         <div id="legend-title">5-yr avg Δ vs 30 yrs ago (°C)</div>
                         <div class="legend-bar-row">
                             <div class="legend-labels">
-                                <span id="legend-high-label" style="color: #b2182b; font-weight: bold;">Warmed</span>
-                                <span id="legend-low-label" style="color: #2166ac; font-weight: bold;">Cooled</span>
+                                <span id="legend-high-label" class="legend-warm">Warmed</span>
+                                <span id="legend-low-label" class="legend-cool">Cooled</span>
                             </div>
                             <svg id="colorbar-svg"></svg>
                         </div>
                     </aside>
                 </div>
-            </div>
-        </section>
-
-        <section id="secondary-vis-section">
-            <div class="chart-card temp-card">
-                <h2>Parallel Coordinates Plot</h2>
-                <svg id="advanced-chart-svg"></svg>
-            </div>
-
-            <div class="chart-card">
-                <h2>Sea Level Streamgraph</h2>
-                <svg id="sea-level-svg"></svg>
-            </div>
-
-            <div class="chart-card">
-                <h2>Line Chart</h2>
-                <svg id="line-chart-svg"></svg>
             </div>
         </section>
 
@@ -99,6 +125,5 @@
     <script src="main.js"></script>
     <script src="sealevel_script.js"></script>
     <script src="temp_script.js"></script>
-    <!-- <script src="linechart.js"></script> -->
 </body>
 </html>

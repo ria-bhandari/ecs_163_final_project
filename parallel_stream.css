@@ -1,24 +1,27 @@
-/* Parallel Coordinates + Sea Level Streamgraph */
+/* Parallel Coordinates + Sea Level Streamgraph + Line Chart */
 
 #advanced-chart-svg,
-#sea-level-svg {
+#sea-level-svg,
+#line-chart-svg {
+    flex: 1;
     width: 100%;
-    height: calc(100% - 45px);
+    min-height: 380px;
     display: block;
-    background: #fafafa;
-    border: 1px dashed #d0d0d0;
-    border-radius: 10px;
+    background: #fafbfd;
+    border: 1px solid rgba(26, 35, 50, 0.06);
+    border-radius: var(--radius-sm, 10px);
 }
 
 /* Parallel coordinates */
 .dimension text {
-    font-size: 12px;
-    fill: #222;
+    font-size: 11px;
+    fill: #3d4654;
+    font-family: "DM Sans", system-ui, sans-serif;
 }
 
 .dimension path,
 .dimension line {
-    stroke: #777;
+    stroke: #aab2be;
 }
 
 .lines path {
@@ -38,10 +41,11 @@
 /* Shared axis styling */
 .axis path,
 .axis line {
-    stroke: #666;
+    stroke: #c5ccd6;
 }
 
 .axis text {
-    font-size: 11px;
-    fill: #333;
+    font-size: 10px;
+    fill: #5a6578;
+    font-family: "DM Sans", system-ui, sans-serif;
 }
