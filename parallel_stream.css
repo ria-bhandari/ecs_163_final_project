@@ -1,8 +1,7 @@
 /* SVG sizing and axis styling for the three charts in the top row */
 
 #advanced-chart-svg,
-#sea-level-svg,
-#line-chart-svg {
+#sea-level-svg {
     flex: 1;
     width: 100%;
     min-height: 380px;

@@ -101,7 +101,7 @@ body {
 
 .charts-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 24px;
     max-width: 1600px;
     margin: 0 auto;
@@ -118,6 +118,12 @@ body {
     box-shadow: var(--shadow-md);
     overflow: hidden;
     transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+#line-chart-panel {
+    grid-column: 1 / -1;
+    min-height: 520px;
+    overflow: visible;
 }
 
 #charts-section .chart-card:hover {

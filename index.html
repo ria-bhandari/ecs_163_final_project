@@ -12,6 +12,7 @@
 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="parallel_stream.css">
+    <link rel="stylesheet" href="linechart_2.css">
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
@@ -19,11 +20,9 @@
 <body>
     <!-- Site title and short intro -->
     <header id="controls">
-        <h1>Nonuniformity of Climate Change</h1>
-        <p class="subtitle">
-            Explore linked time-series views up top, then scroll down to the geographic map
-            for global and California-focused exploration.
-        </p>
+        <h1>Is Climate Change Occurring Uniformly Across the World?
+        </h1>
+       
     </header>
 
     <main id="dashboard">
@@ -32,16 +31,42 @@
         <section id="charts-section" aria-label="Time series visualizations">
             <div class="section-intro">
                 <span class="section-tag">Time Series</span>
-                <h2 class="section-title">Trends Across States &amp; Oceans</h2>
+                <h2 class="section-title">Trends Across States and Oceans</h2>
             </div>
 
             <div class="charts-grid">
-                <div class="chart-card">
+                <div class="chart-card" id="line-chart-panel">
                     <div class="card-heading">
                         <h3>Line Chart</h3>
-                        <p>State-level temperature trajectories over time.</p>
+                        <p>State-level changes in temperature and sea level over time.</p>
                     </div>
-                    <svg id="line-chart-svg"></svg>
+
+                    <div class="county-filter">
+                        <span class="region-label">Counties:</span>
+                        <label><input type="checkbox" class="county-cb" value="Los Angeles" checked> Los Angeles</label>
+                        <label><input type="checkbox" class="county-cb" value="San Francisco" checked> San Francisco</label>
+                        <label><input type="checkbox" class="county-cb" value="San Diego" checked> San Diego</label>
+                    </div>
+
+                    <div id="chart-wrapper">
+                        <div id="chart-container">
+                            <svg id="linechart-svg"></svg>
+                        </div>
+
+                        <aside id="chart-legend">
+                            <div class="legend-title">Legend</div>
+                            <div class="legend-item">
+                                <span class="legend-swatch" id="swatch-temp"></span>
+                                <span class="legend-label">Temperature (solid)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-swatch" id="swatch-sea"></span>
+                                <span class="legend-label">Sea Level (dashed)</span>
+                            </div>
+                            <hr class="legend-divider">
+                            <p class="legend-note">County lines and coastal gauge trends, 1998–2013.</p>
+                        </aside>
+                    </div>
                 </div>
 
                 <div class="chart-card">
@@ -55,7 +80,7 @@
                 <div class="chart-card">
                     <div class="card-heading">
                         <h3>Parallel Coordinates</h3>
-                        <p>Brush axes to filter U.S. states by year, temperature, and uncertainty.</p>
+                        <p>Brush axes to filter states in the US by year, temperature, and uncertainty.</p>
                     </div>
                     <svg id="advanced-chart-svg"></svg>
                 </div>
@@ -77,7 +102,7 @@
             <div id="map-panel" class="chart-card main-card">
                 <div class="card-header">
                     <p class="map-description">
-                        Colors show the 5-year average of change vs. 30 years earlier
+                        Colors show the 5-year average of changes in temperature vs. 30 years earlier
                         (red = warmed, blue = cooled). Zoom in for major cities.
                     </p>
 
@@ -128,6 +153,7 @@
     <!-- Shared hover tooltip used by map and parallel coordinates -->
     <div id="tooltip" class="tooltip" style="opacity: 0;"></div>
 
+    <script src="linechart.js"></script>
     <script src="main.js"></script>
     <script src="sealevel_script.js"></script>
     <script src="temp_script.js"></script>
