@@ -10,7 +10,7 @@ The page is split into two sections. Scroll down when you are ready for the map.
 
 - **Parallel coordinates** – Eight U.S. states plotted across year, average temperature, and uncertainty. Drag on any axis to filter the lines.
 - **Sea level streamgraph** – Regional sea level anomalies stacked by ocean basin from 1992 to 2008.
-- **Line chart** – Reserved for state temperature trends. The SVG container is in place; the drawing script is not hooked up yet.
+- **Line chart** – California county temperature and sea level trends from 1998 - 2013.
 
 **Bottom section (geographic map)**
 
