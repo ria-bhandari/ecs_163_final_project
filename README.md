@@ -23,7 +23,7 @@ We spent extra time on California because NOAA provides county temperature anoma
 
 ## How to run it
 
-The dashboard loads CSV files from the `alldatasets/` folder, so you need a local server. Opening `index.html` directly in the browser will not work.
+Unzip alldatasets.zip and make sure the .csv data is accessible from the `alldatasets/` folder. The dashboard loads CSV files from the `alldatasets/` folder, so you need a local server. Opening `index.html` directly in the browser will not work.
 
 From the project root:
 
