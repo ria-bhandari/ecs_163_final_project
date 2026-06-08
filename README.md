@@ -1,6 +1,6 @@
 # Is Climate Change Occurring Uniformly Across the World?
 
-ECS 163 final project. This is an interactive dashboard for exploring how temperature and sea level have changed over time, and how those changes differ by region. The short answer we are trying to show: they do not change the same way everywhere.
+ECS 163 Final Project. This is an interactive dashboard for exploring how temperature and sea level have changed over time, and how those changes differ by region. The short answer we are trying to show: they do not change the same way everywhere.
 
 ## What you will see
 
@@ -8,7 +8,7 @@ The page is split into two sections. Scroll down when you are ready for the map.
 
 **Top row (time series views)**
 
-- **Parallel coordinates** – Eight U.S. states plotted across year, average temperature, and uncertainty. Drag on any axis to filter the lines.
+- **Parallel coordinates** – 10 U.S. states plotted across year, average temperature, and uncertainty. Drag on any axis to filter the lines.
 - **Sea level streamgraph** – Regional sea level anomalies stacked by ocean basin from 1992 to 2008.
 - **Line chart** – California county temperature and sea level trends from 1998 - 2013.
 
@@ -22,15 +22,14 @@ The page is split into two sections. Scroll down when you are ready for the map.
 We spent extra time on California because NOAA provides county temperature anomalies and a solid network of tide gauges along the coast.
 
 ## How to run it
-
-Unzip alldatasets.zip and make sure the .csv data is accessible from the `alldatasets/` folder. The dashboard loads CSV files from the `alldatasets/` folder, so you need a local server. Opening `index.html` directly in the browser will not work.
-
-From the project root:
+- Download and unzip `alldatasets.zip`.
+- Place the extracted `alldatasets` folder in the same directory level as `index.html`.
+- Open terminal/VS Code Terminal in the project folder.
+- Start a local server using:
 
 ```bash
 python3 -m http.server 8000
 ```
-
 Then visit [http://localhost:8000](http://localhost:8000).
 
 No npm install required. D3 is loaded from a CDN in `index.html`.
@@ -41,23 +40,24 @@ No npm install required. D3 is loaded from a CDN in `index.html`.
 |------|--------------|
 | `index.html` | Page structure and chart containers |
 | `main.js` | Global map, zoom, year slider, California overlay |
+| `style.css` | Layout, typography, map panel styling |
 | `temp_script.js` | Parallel coordinates plot |
 | `sealevel_script.js` | Sea level streamgraph |
-| `style.css` | Layout, typography, map panel styling |
+| `linechart.css` | Styling for the line chart |
+| `linechart.js` | Javascript for the line chart |
 | `parallel_stream.css` | Shared styles for the top chart row |
 | `fetch_county_temps.js` | One-time Node script to download CA county temps from NOAA |
 | `extract_noaa_data.js` | One-time Node script to compile CA tide gauge CSVs |
 | `alldatasets/` | All CSV data the visualizations read from |
 
 ## Data sources
-
 - **Berkeley Earth (Kaggle)** – Global and state land temperature CSVs in `alldatasets/`
 - **NOAA sea level** – Regional anomaly files (`slr_sla_*.csv`) and California tide gauge meantrend files (`941*_meantrend.csv`)
 - **NOAA Climate at a Glance** – County temperature anomalies, fetched via `fetch_county_temps.js` and saved to `ca_county_temps.csv`
 - **GeoJSON** – Country boundaries and California county shapes, loaded from GitHub at runtime
 
-## How the map colors work
 
+## How the map colors work
 For the selected year, we take the average temperature over the past 5 years and subtract the average from 30 years before that window. The result is the delta you see on the color scale. City dots use the same calculation once you zoom in.
 
 In California detail mode, counties show NOAA temperature anomalies directly. Sea level mode fills counties with a statewide coastal average and places dots at individual tide gauge locations.

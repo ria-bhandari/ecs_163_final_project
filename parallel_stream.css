@@ -1,5 +1,3 @@
-/* SVG sizing and axis styling for the three charts in the top row */
-
 #advanced-chart-svg,
 #sea-level-svg {
     flex: 1;
@@ -11,7 +9,6 @@
     border-radius: var(--radius-sm, 10px);
 }
 
-/* Parallel coordinates */
 .dimension text {
     font-size: 11px;
     fill: #3d4654;
@@ -27,7 +24,6 @@
     transition: opacity 0.2s ease, stroke-width 0.2s ease;
 }
 
-/* Streamgraph */
 .layer {
     cursor: pointer;
     transition: opacity 0.2s ease;
@@ -37,7 +33,6 @@
     opacity: 1;
 }
 
-/* Shared axis styling */
 .axis path,
 .axis line {
     stroke: #c5ccd6;
@@ -47,4 +42,36 @@
     font-size: 10px;
     fill: #5a6578;
     font-family: "DM Sans", system-ui, sans-serif;
+}
+
+.layer {
+    cursor: pointer;
+}
+
+#sea-level-svg {
+    width: 100%;
+    height: 520px;
+    display: block;
+}
+
+#sea-floating-info {
+    position: absolute;
+    width: 150px;
+    top: 320px;
+    left: 255px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 3px solid #d0d7de;
+    border-radius: 12px;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+    font-size: 0.78rem;
+    line-height: 1.35;
+    color: #1f2937;
+    pointer-events: none;
+    display: none;
+    z-index: 20;
+}
+
+#sea-floating-info strong {
+    font-size: 0.9rem;
 }

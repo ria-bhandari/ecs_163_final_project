@@ -1,6 +1,3 @@
-// Stacked area chart of regional sea level anomalies by ocean basin.
-// NOAA files have comment headers, so we strip those before parsing.
-
 (function drawSeaLevelChart() {
   const svg = d3.select("#sea-level-svg");
 
@@ -21,14 +18,13 @@
   const height = svgNode.clientHeight;
   svg.attr("width", width).attr("height", height);
 
-  const margin = { top: 60, right: 220, bottom: 60, left: 70 };
+  const margin = { top: 60, right: 180, bottom: 60, left: 70 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
   const g = svg.append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  // NOAA exports include # comment lines that break d3.csv
   function loadCleanCSV(file, region) {
     return d3.text(file).then(text => {
       const cleanText = text
@@ -64,7 +60,6 @@
     .sort((a, b) => a - b);
     const regions = files.map(d => d.region);
 
-    // Pivot to wide format so d3.stack can build layers per region
     const wideData = years.map(year => {
       const row = { year };
 
@@ -88,11 +83,9 @@
         .range([0, innerWidth]);
 
     const y = d3.scaleLinear()
-      .domain([
-        d3.min(series, layer => d3.min(layer, d => d[0])),
-        d3.max(series, layer => d3.max(layer, d => d[1]))
-      ])
-      .range([innerHeight, 0]);
+        .domain([-160, 80])
+        .range([innerHeight, 0])
+        .range([innerHeight, 0]);
 
     const color = d3.scaleOrdinal()
       .domain(regions)
@@ -112,12 +105,35 @@
       .attr("d", area)
       .style("fill", d => color(d.key))
       .style("opacity", 0.85)
-      .on("mouseover", function(d) {
-        d3.selectAll(".layer").style("opacity", 0.2);
+
+      .on("mouseover", function(event, d) {
+        d3.selectAll(".layer").style("opacity", 0.25);
         d3.select(this).style("opacity", 1);
       })
+
       .on("mouseout", function() {
         d3.selectAll(".layer").style("opacity", 0.85);
+      })
+
+      .on("click", function(event, d) {
+        const region = d.key;
+        const values = combined.filter(row => row.region === region);
+
+        const avg = d3.mean(values, row => row.value);
+        const max = d3.max(values, row => row.value);
+        const min = d3.min(values, row => row.value);
+
+        d3.selectAll(".layer").style("opacity", 0.25);
+        d3.select(this).style("opacity", 1);
+
+        d3.select("#sea-floating-info")
+          .style("display", "block")
+          .html(`
+            <strong>${region}</strong><br>
+            Avg: ${avg.toFixed(2)} mm<br>
+            Max: ${max.toFixed(2)} mm<br>
+            Min: ${min.toFixed(2)} mm
+          `);
       });
 
     g.append("g")
@@ -157,14 +173,14 @@
         .attr("transform", `translate(0,${i * 25})`);
 
       item.append("rect")
-        .attr("width", 15)
-        .attr("height", 15)
+        .attr("width", 12)
+        .attr("height", 12)
         .attr("fill", color(region));
 
       item.append("text")
-        .attr("x", 25)
+        .attr("x", 29)
         .attr("y", 12)
-        .style("font-size", "16px")
+        .style("font-size", "12px")
         .text(region);
     });
   });

@@ -1,6 +1,3 @@
-// AI Use Note: Used Claude to create code skeleton before modifying
-
-
 /* ============================================================
    linechart.js — California Climate Dual-Axis Line Chart
    D3 v7 | Two-panel layout:
@@ -18,7 +15,7 @@ const M_TOP    = { top: 48, right: 110, bottom: 28, left: 70 };
 const M_BOTTOM = { top: 20, right: 100, bottom: 72, left: 70 };
 const PANEL_GAP = 28;
 
-// ── State ─────────────────────────────────────────────────────
+// State 
 let svgEl, topG, botG;
 let xScaleTop, xScaleBot;
 let yTempTop, yTempBot, ySeaBot;
@@ -38,14 +35,10 @@ const seaMap  = new Map();
 const linecharttooltip = d3.select("#tooltip");
 let chartReady = false;
 
-// ── Aggregation ───────────────────────────────────────────────
-
-// aggregate based on selected region
+// Aggregation based on selected region
 function aggregateRegionTemps(rows, region) {
 
     const acc = {};
-
-    // special handler for countries in the arctic circle
     const ARCTIC_COUNTRIES = ["Norway", "Iceland", "Greenland", "Russia", "Canada"];
 
     rows.forEach (d => {
@@ -119,11 +112,9 @@ const STATION_COLORS = {
 
 function drawStationLines(activeStations) {
     if (!botG) return;
-    // Remove old station lines before redrawing
     botG.selectAll(".station-line").remove();
 
     activeStations.forEach(stationName => {
-        // Build series from rawCACountySea rows for this station
         const series = rawCACountySea
             .filter(d => d.Station === stationName && d.Date && d.MeanSeaLevelAnomaly !== undefined)
             .map(d => ({
@@ -138,7 +129,7 @@ function drawStationLines(activeStations) {
         const stationLine = d3.line()
             .defined(d => !isNaN(d.value))
             .x(d => xScaleBot(d.year))
-            .y(d => ySeaBot(d.value))  // uses sea level scale, not temp
+            .y(d => ySeaBot(d.value))  
             .curve(d3.curveMonotoneX);
 
         botG.append("path")
@@ -147,7 +138,7 @@ function drawStationLines(activeStations) {
             .attr("fill", "none")
             .attr("stroke", STATION_COLORS[stationName])
             .attr("stroke-width", "1.5px")
-            .attr("stroke-dasharray", "6 3")  // dashed to distinguish from temp lines
+            .attr("stroke-dasharray", "6 3")  
             .attr("opacity", 0.75)
             .attr("clip-path", "url(#clip-bot)")
             .attr("d", stationLine);
@@ -156,10 +147,7 @@ function drawStationLines(activeStations) {
 
 function drawCountyLines(innerWT, innerHT, activeCounties) {
     if (!botG) return;
-    // Remove old lines before redrawing
     botG.selectAll(".county-line").remove();
-
-    // Only loop through checked counties, not all of COUNTY_COLORS
     activeCounties.forEach(countyName => {
         const countyYears = caCountyTempData[countyName];
         if (!countyYears) return;
@@ -189,13 +177,12 @@ function drawCountyLines(innerWT, innerHT, activeCounties) {
 }
 
 function getCheckedCounties() {
-    // Get all checked checkboxes and return their values as an array
     return Array.from(document.querySelectorAll(".county-cb:checked"))
                 .map(cb => cb.value);
 }
 
 
-// ── Chart init ────────────────────────────────────────────────
+// Chart init
 function initChart() {
     const container = document.getElementById("chart-container");
     const W  = container.clientWidth  || 900;
@@ -215,14 +202,12 @@ function initChart() {
 
     svgEl.append("rect").attr("width", W).attr("height", H).attr("fill", OCEAN_COLOR);
 
-    // ── Clip paths ──
+    // Clip paths
     const defs = svgEl.append("defs");
     defs.append("clipPath").attr("id", "clip-bot")
         .append("rect").attr("width", innerWB).attr("height", innerHB);
 
-    // ════════════════════════════════════════════════
     // BOTTOM PANEL — comparison window 1998–2013
-    // ════════════════════════════════════════════════
     const botOffsetY = topH + PANEL_GAP;
     botG = svgEl.append("g")
         .attr("transform", `translate(${M_BOTTOM.left},${botOffsetY + M_BOTTOM.top})`);
@@ -303,7 +288,7 @@ function initChart() {
     return { innerWT, innerHT, innerWB, innerHB };
 }
 
-// ── Render ────────────────────────────────────────────────────
+// Render
 function renderChart(innerWT, innerHT, innerWB, innerHB) {
     const seaYears  = seaSeries.map(d => d.year);
     const tempYears = tempSeries.map(d => d.year);
@@ -384,7 +369,7 @@ yTempBot.domain([-cAbs * 1.25, cAbs * 1.25]).nice();
     drawStationLines(getCheckedCounties());
 }
 
-// ── Hover ─────────────────────────────────────────────────────
+// Hover
 function onMouseMove(event) {
     const [mx] = d3.pointer(event);
     const hovered = Math.round(xScaleBot.invert(mx));
@@ -493,7 +478,6 @@ function onMouseLeave() {
 })();
 
 // REDRAW HANDLER - redraw when the region changes
-
 function redrawRegion(region) {
     const newTempByYear = aggregateRegionTemps(rawTempData, region);
     tempSeries = Object.keys(newTempByYear)
@@ -521,7 +505,7 @@ document.querySelectorAll(".county-cb").forEach(cb => {
     });
 });
 
-// ── Resize ────────────────────────────────────────────────────
+// Resize
 let resizeTimer;
 window.addEventListener("resize", () => {
     if (!chartReady) return;

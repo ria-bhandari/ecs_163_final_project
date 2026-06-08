@@ -1,18 +1,17 @@
-// Parallel coordinates for eight U.S. states.
-// Brush any axis to filter lines on the other dimensions.
-
 (function drawStateTemperatureChart() {
   const tempFile = "./alldatasets/GlobalLandTemperaturesByState.csv";
 
   const selectedStates = [
     "California",
     "Texas",
+    "Oregon",
+    "Michigan",
+    "Colorado",
+    "Georgia",
     "Florida",
-    "New York",
+    "North Carolina",
     "Pennsylvania",
-    "Illinois",
-    "Ohio",
-    "Georgia"
+    "New York"
   ];
 
   const svg = d3.select("#advanced-chart-svg");
@@ -24,7 +23,7 @@
   svg.selectAll("*").remove();
   svg.attr("viewBox", `0 0 ${width} ${height}`);
 
-  const margin = { top: 45, right: 95, bottom: 35, left: 55 };
+  const margin = { top: 45, right: 95, bottom: 35, left: 40 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
@@ -147,7 +146,6 @@
 
     const activeBrushes = {};
 
-    // A line stays visible only if it passes every active brush filter
     function brush(event, dim) {
       if (event.selection) {
         activeBrushes[dim] = event.selection.map(y[dim].invert);
@@ -173,8 +171,13 @@
       .attr("transform", d => `translate(${x(d)},0)`);
 
     axisGroups.each(function(dim) {
-      d3.select(this)
-        .call(d3.axisLeft(y[dim]).ticks(5));
+      const axis = d3.axisLeft(y[dim]).ticks(5);
+
+      if (dim === "year") {
+        axis.tickFormat(d3.format("d"));
+      }
+
+      d3.select(this).call(axis);
     });
 
     axisGroups.append("text")

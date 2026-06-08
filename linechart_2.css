@@ -1,9 +1,3 @@
-/* 
-AI Use Note: Used Claude to create code skeleton before modifying
-
-Scoped for the dashboard line chart card (#line-chart-panel).
-============================================================ */
-
 #line-chart-panel .county-filter {
     display: flex;
     flex-wrap: wrap;
